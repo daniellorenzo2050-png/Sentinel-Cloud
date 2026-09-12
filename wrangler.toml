@@ -19,10 +19,10 @@ database_id = "a4ca7f95-c574-40f0-8061-5d6c2e5ea5e3"
 # Configuração dos Durable Objects
 [durable_objects]
 bindings = [
-  { name = "SENTINEL_DO", class_name = "SentinelDurableObject" }
+  { name = "SentinelDO", class_name = "SentinelSessionDO" }
 ]
 
 # Migrações necessárias para os Durable Objects
 [[migrations]]
 tag = "v1"
-new_classes = ["SentinelDurableObject"]
+new_classes = ["SentinelSessionDO"]
