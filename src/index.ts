@@ -66,8 +66,8 @@ app.get('/', (c) => {
                 </div>
             </div>
             <div class="flex items-center space-x-4">
-                <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    <i class="fa-solid fa-circle text-[8px] mr-1"></i> Edge Operational
+                <span id="userStatusBadge" class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                    <i class="fa-solid fa-circle text-[8px] mr-1"></i> Não autenticado
                 </span>
             </div>
         </div>
@@ -76,27 +76,52 @@ app.get('/', (c) => {
     <!-- Main Container -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
-        <!-- Header Grid: Auth & Stats -->
+        <!-- Header Grid: Auth (Login/Register) & Stats -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- Criar Conta -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-4 text-slate-700 text-4xl">
-                    <i class="fa-solid fa-user-plus"></i>
+            
+            <!-- Login & Criar Conta -->
+            <div class="space-y-6">
+                <!-- Login -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 text-slate-700 text-4xl">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                    </div>
+                    <h2 class="text-lg font-semibold mb-4 text-emerald-400"><i class="fa-solid fa-key mr-2"></i>Entrar (Login)</h2>
+                    <form id="loginForm" class="space-y-4">
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Username</label>
+                            <input type="text" id="loginUser" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Password</label>
+                            <input type="password" id="loginPass" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
+                        </div>
+                        <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2 rounded-lg text-sm transition shadow-lg shadow-emerald-600/20">
+                            Fazer Login
+                        </button>
+                    </form>
                 </div>
-                <h2 class="text-lg font-semibold mb-4 text-indigo-400"><i class="fa-solid fa-user-shield mr-2"></i>Criar Conta (D1 + SHA-512)</h2>
-                <form id="registerForm" class="space-y-4">
-                    <div>
-                        <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Username</label>
-                        <input type="text" id="regUser" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
+
+                <!-- Criar Conta -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 text-slate-700 text-4xl">
+                        <i class="fa-solid fa-user-plus"></i>
                     </div>
-                    <div>
-                        <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Password</label>
-                        <input type="password" id="regPass" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
-                    </div>
-                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2 rounded-lg text-sm transition shadow-lg shadow-indigo-600/20">
-                        Registrar Usuário
-                    </button>
-                </form>
+                    <h2 class="text-lg font-semibold mb-4 text-indigo-400"><i class="fa-solid fa-user-shield mr-2"></i>Criar Conta (D1)</h2>
+                    <form id="registerForm" class="space-y-4">
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Username</label>
+                            <input type="text" id="regUser" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Password</label>
+                            <input type="password" id="regPass" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2 rounded-lg text-sm transition shadow-lg shadow-indigo-600/20">
+                            Registrar Usuário
+                        </button>
+                    </form>
+                </div>
             </div>
 
             <!-- Criar Arquivo / Pasta na CDN -->
@@ -227,6 +252,33 @@ app.get('/', (c) => {
             });
         }
 
+        // Lógica de Login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('loginUser').value;
+            const password = document.getElementById('loginPass').value;
+
+            try {
+                const res = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    Swal.fire('Bem-vindo!', \`Logado com sucesso como \${username}\`, 'success');
+                    document.getElementById('userStatusBadge.className = 'text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                    document.getElementById('userStatusBadge').innerHTML = \`<i class="fa-solid fa-circle text-[8px] mr-1"></i> \${username}\`;
+                    document.getElementById('loginForm').reset();
+                } else {
+                    Swal.fire('Erro', data.error || 'Credenciais inválidas', 'error');
+                }
+            } catch (err) {
+                Swal.fire('Erro', 'Falha na conexão com o servidor', 'error');
+            }
+        });
+
+        // Lógica de Registro
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const username = document.getElementById('regUser').value;
@@ -454,6 +506,39 @@ app.post('/api/v1/auth/register', async (c) => {
 		return c.json({ status: 'success', username, message: 'Usuário cadastrado com SHA-512' });
 	} catch (err: any) {
 		return c.json({ error: err.message.includes('UNIQUE') ? 'Usuário já existe' : err.message }, 500);
+	}
+});
+
+app.post('/api/v1/auth/login', async (c) => {
+	try {
+		const { username, password } = await c.req.json<{ username: string; password: string }>();
+		if (!username || !password) return c.json({ error: 'Username e password obrigatórios' }, 400);
+
+		const passwordHash = await hashPassword(password);
+
+		// Certifica-se que a tabela existe caso o login seja chamado antes do registro
+		await c.env.SentinelD1.prepare(
+			`CREATE TABLE IF NOT EXISTS sentinel_users (
+				id INTEGER PRIMARY KEY AUTOINCREMENT,
+				username TEXT UNIQUE,
+				password_hash TEXT,
+				created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+			)`
+		).run();
+
+		const user = await c.env.SentinelD1.prepare(
+			'SELECT * FROM sentinel_users WHERE username = ? AND password_hash = ?'
+		)
+			.bind(username, passwordHash)
+			.first();
+
+		if (!user) {
+			return c.json({ error: 'Usuário ou senha incorretos' }, 401);
+		}
+
+		return c.json({ status: 'success', message: 'Login bem-sucedido', username });
+	} catch (err: any) {
+		return c.json({ error: err.message }, 500);
 	}
 });
 
