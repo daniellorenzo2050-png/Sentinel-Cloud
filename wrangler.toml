@@ -25,4 +25,4 @@ bindings = [
 # Migrações necessárias para os Durable Objects
 [[migrations]]
 tag = "v1"
-new_classes = ["SentinelSessionDO"]
+new_sqlite_classes = ["SentinelSessionDO"]
