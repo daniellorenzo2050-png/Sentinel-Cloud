@@ -60,7 +60,10 @@ app.get('/', (c) => {
                 <div class="bg-indigo-600 p-2 rounded-lg text-white">
                     <i class="fa-solid fa-shield-halved text-xl"></i>
                 </div>
-                <span class="text-xl font-bold tracking-wider bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">Sentinel Cloud</span>
+                <div>
+                    <span class="text-xl font-bold tracking-wider bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">Sentinel Cloud</span>
+                    <span id="cdnBrandName" class="text-xs block text-cyan-400 font-mono tracking-widest uppercase">Sentinel Edge CDN</span>
+                </div>
             </div>
             <div class="flex items-center space-x-4">
                 <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
@@ -101,7 +104,13 @@ app.get('/', (c) => {
                 <div class="absolute top-0 right-0 p-4 text-slate-700 text-4xl">
                     <i class="fa-solid fa-folder-tree"></i>
                 </div>
-                <h2 class="text-lg font-semibold mb-4 text-cyan-400"><i class="fa-solid fa-cloud-arrow-up mr-2"></i>Gerenciador de CDN (SentinelKV)</h2>
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+                    <h2 class="text-lg font-semibold text-cyan-400"><i class="fa-solid fa-cloud-arrow-up mr-2"></i>Gerenciador de CDN</h2>
+                    <div class="flex items-center space-x-2">
+                        <input type="text" id="customCdnNameInput" value="Sentinel Edge CDN" class="bg-slate-950 border border-slate-800 rounded px-2 py-1 text-xs text-cyan-300 w-40" placeholder="Nome da CDN">
+                        <button onclick="updateCdnName()" class="bg-slate-800 hover:bg-slate-700 text-xs px-2 py-1 rounded text-slate-300">Renomear</button>
+                    </div>
+                </div>
                 <form id="uploadForm" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs uppercase tracking-wider text-slate-400 mb-1">Caminho / Pasta / Arquivo</label>
@@ -166,7 +175,7 @@ app.get('/', (c) => {
                     <table class="w-full text-left text-sm">
                         <thead class="bg-slate-950 text-slate-400 uppercase text-[10px]">
                             <tr>
-                                <th class="p-3">Caminho</th>
+                                <th class="p-3">Caminho / Link do Arquivo</th>
                                 <th class="p-3">MIME Type</th>
                                 <th class="p-3">Ações</th>
                             </tr>
@@ -205,6 +214,19 @@ app.get('/', (c) => {
 
     <!-- Scripts de Interação -->
     <script>
+        function updateCdnName() {
+            const newName = document.getElementById('customCdnNameInput').value;
+            document.getElementById('cdnBrandName').textContent = newName;
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Nome da CDN atualizado!',
+                showConfirmButton: false,
+                timer: 1500
+            });
+        }
+
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const username = document.getElementById('regUser').value;
@@ -270,12 +292,20 @@ app.get('/', (c) => {
 
                 data.files.forEach(file => {
                     const tr = document.createElement('tr');
+                    const fileUrl = \`/cdn/\${file.path}\`;
+                    const fullUrl = window.location.origin + fileUrl;
+                    
                     tr.innerHTML = \`
-                        <td class="p-3 font-mono text-cyan-400">\${file.path}</td>
+                        <td class="p-3">
+                            <div class="font-mono text-cyan-400 font-semibold">\${file.path}</div>
+                            <a href="\${fileUrl}" target="_blank" class="text-xs text-indigo-400 hover:underline flex items-center mt-1">
+                                <i class="fa-solid fa-link mr-1"></i> \${fullUrl}
+                            </a>
+                        </td>
                         <td class="p-3"><span class="px-2 py-0.5 rounded text-xs bg-slate-800 border border-slate-700">\${file.mimeType}</span></td>
                         <td class="p-3">
-                            <a href="/cdn/\${file.path}" target="_blank" class="text-indigo-400 hover:underline mr-3"><i class="fa-solid fa-eye"></i></a>
-                            <button onclick="deleteFile('\${file.path}')" class="text-red-400 hover:underline"><i class="fa-solid fa-trash"></i></button>
+                            <a href="\${fileUrl}" target="_blank" class="text-indigo-400 hover:underline mr-3" title="Visualizar Arquivo"><i class="fa-solid fa-eye"></i></a>
+                            <button onclick="deleteFile('\${file.path}')" class="text-red-400 hover:underline" title="Deletar Arquivo"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     \`;
                     tbody.appendChild(tr);
@@ -362,9 +392,14 @@ app.get('/', (c) => {
                 data.pages.forEach(page => {
                     const tr = document.createElement('tr');
                     const pageUrl = \`/page/\${page.uuid}\`;
+                    const fullPageUrl = window.location.origin + pageUrl;
                     tr.innerHTML = \`
                         <td class="p-3 font-semibold text-slate-200">\${page.title}</td>
-                        <td class="p-3 font-mono text-xs text-emerald-400"><a href="\${pageUrl}" target="_blank" class="hover:underline">\${page.uuid} <i class="fa-solid fa-external-link-alt ml-1"></i></a></td>
+                        <td class="p-3 font-mono text-xs text-emerald-400">
+                            <a href="\${pageUrl}" target="_blank" class="hover:underline flex items-center">
+                                \${page.uuid} <i class="fa-solid fa-external-link-alt ml-1"></i>
+                            </a>
+                        </td>
                         <td class="p-3">
                             <button onclick="deletePage('\${page.uuid}')" class="text-red-400 hover:underline"><i class="fa-solid fa-trash"></i></button>
                         </td>
