@@ -586,6 +586,4 @@ app.delete('/api/v1/pages/:uuid', async (c) => {
 	return c.json({ status: 'success' });
 });
 
-export default {
-	fetch: app.fetch,
-};
+export default app;
